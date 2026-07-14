@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: neighbourhub-db
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: neighbourhub
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: neighbourhub-backend
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/neighbourhub?schema=public
+      PORT: 3000
+      JWT_SECRET: default-neighbourhub-secret-key-very-secure
+      JWT_REFRESH_SECRET: default-neighbourhub-refresh-secret-key-very-secure
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-placeholder-key}
+    depends_on:
+      - db
+    restart: always
+
+volumes:
+  pgdata:

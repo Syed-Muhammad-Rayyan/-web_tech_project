@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Fix MUI OutlinedInput legend notch override by Tailwind */
+fieldset.MuiOutlinedInput-notchedOutline legend {
+  width: auto !important;
+}

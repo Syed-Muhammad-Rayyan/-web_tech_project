@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String           @id @default(uuid())
+  name               String
+  email              String           @unique
+  passwordHash       String
+  role               String           // Resident, Provider, Moderator, Admin
+  zone               String
+  phone              String?
+  address            String?
+  avatar             String?
+  providerProfile    ProviderProfile?
+  bookingsAsResident Booking[]        @relation("ResidentBookings")
+  bookingsAsProvider Booking[]        @relation("ProviderBookings")
+  reviewsAuthored    Review[]         @relation("AuthoredReviews")
+  reviewsReceived    Review[]         @relation("ReceivedReviews")
+  messagesSent       Message[]        @relation("SentMessages")
+  messagesReceived   Message[]        @relation("ReceivedMessages")
+}
+
+model ProviderProfile {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                String
+  categories         String[] // PostgreSQL scalar array
+  availability       String
+  coverageRadius     Int
+  verificationStatus String   @default("None") // None, Pending, Verified
+  idProofUrl         String?
+  portfolioPhotos    String[]
+  responseRate       Int      @default(100)
+  avgResponseTime    String   @default("Instant")
+}
+
+model Booking {
+  id             String   @id @default(uuid())
+  residentId     String
+  resident       User     @relation("ResidentBookings", fields: [residentId], references: [id], onDelete: Cascade)
+  providerId     String
+  provider       User     @relation("ProviderBookings", fields: [providerId], references: [id], onDelete: Cascade)
+  service        String
+  date           String
+  time           String
+  description    String
+  status         String   // Sent, Accepted, Declined, In Progress, Completed, Disputed
+  reviews        Review[]
+  dispute        Dispute?
+}
+
+model Dispute {
+  bookingId             String   @id
+  booking               Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  raisedBy              String   // Resident, Provider
+  complaint             String
+  evidence              String
+  moderatorId           String?
+  aiSuggestedResolution String?
+  resolvedAt            String?
+  resolution            String?
+}
+
+model Review {
+  id        String  @id @default(uuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User    @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  targetId  String
+  target    User    @relation("ReceivedReviews", fields: [targetId], references: [id], onDelete: Cascade)
+  rating    Float
+  text      String
+  date      String
+}
+
+model Announcement {
+  id         String    @id @default(uuid())
+  title      String
+  content    String
+  authorName String
+  date       String
+  pinned     Boolean   @default(false)
+  comments   Comment[]
+}
+
+model Comment {
+  id             String       @id @default(uuid())
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  authorName     String
+  content        String
+  date           String
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  content     String
+  timestamp   DateTime @default(now())
+  flagged     Boolean  @default(false)
+}
+
+model Zone {
+  id   String @id @default(uuid())
+  name String @unique
+}
