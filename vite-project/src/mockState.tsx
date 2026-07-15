@@ -243,12 +243,32 @@ export const useStore = create<StoreState>((set, get) => ({
           setupSocket(user, set, get);
         }
 
-        const [bookingsRes, messagesPartnersRes] = await Promise.all([
+        const [bookingsRes, disputesRes, messagesPartnersRes] = await Promise.all([
           axios.get("/bookings/my").catch(() => ({ data: [] })),
+          (user.role === "Moderator" || user.role === "Admin")
+            ? axios.get("/bookings/disputes").catch(() => ({ data: [] }))
+            : Promise.resolve({ data: [] }),
           axios.get("/messages/partners").catch(() => ({ data: [] })),
         ]);
 
-        const adaptedBookings = bookingsRes.data.map((b: any) => ({
+        let bookingsData = [...bookingsRes.data];
+        if (user.role === "Moderator" || user.role === "Admin") {
+          const adaptedDisputes = disputesRes.data.map((d: any) => {
+            const b = d.booking;
+            return {
+              ...b,
+              dispute: d,
+            };
+          });
+          const existingIds = new Set(bookingsData.map((b) => b.id));
+          adaptedDisputes.forEach((b: any) => {
+            if (b && !existingIds.has(b.id)) {
+              bookingsData.push(b);
+            }
+          });
+        }
+
+        const adaptedBookings = bookingsData.map((b: any) => ({
           ...b,
           residentName: b.resident?.name,
           providerName: b.provider?.name,

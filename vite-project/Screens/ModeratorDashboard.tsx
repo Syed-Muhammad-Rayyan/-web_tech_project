@@ -99,7 +99,6 @@ export const ModeratorDashboard: React.FC = () => {
                   </Tabs>
                 </Box>
                 <CardContent className="p-4 max-h-[500px] overflow-y-auto space-y-4">
-                  const list = activeTab === 0 ? assignedDisputes : unassignedDisputes;
                   { (activeTab === 0 ? assignedDisputes : unassignedDisputes).length === 0 ? (
                     <Typography align="center" color="text.secondary" className="py-10">
                       No dispute cases here.

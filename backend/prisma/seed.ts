@@ -244,6 +244,19 @@ async function main() {
     },
   });
 
+  const booking3 = await prisma.booking.create({
+    data: {
+      id: 'b-3',
+      residentId: resident.id,
+      providerId: prov1.id,
+      service: 'Electrical Repair',
+      date: '2026-07-15',
+      time: '11:00',
+      description: 'Living room wall plugs spark when hosting appliances.',
+      status: 'In Progress',
+    },
+  });
+
   await prisma.review.create({
     data: {
       id: 'r-1',

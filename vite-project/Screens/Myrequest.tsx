@@ -170,10 +170,14 @@ export const MyRequests: React.FC = () => {
                       </Typography>
 
                       {/* Dispute logs if status is completed and disputed details exist */}
-                      {request.status === "Disputed" && request.disputeDetails && (
+                      {((request.status === "Disputed" || (request.status === "Completed" && request.disputeDetails?.resolution)) && request.disputeDetails) && (
                         <div className="bg-red-50/50 p-3 rounded-xl border border-red-150 mb-4 text-xs">
-                          <span className="font-bold text-red-900 block mb-1">DISPUTE STATUS: Under Moderator Review</span>
-                          <span className="text-gray-600">{request.disputeDetails.complaint}</span>
+                          <span className="font-bold text-red-900 block mb-1">
+                            {request.disputeDetails.resolution 
+                              ? "DISPUTE STATUS: Resolved by Moderator" 
+                              : "DISPUTE STATUS: Under Moderator Review"}
+                          </span>
+                          <span className="text-gray-650">{request.disputeDetails.complaint}</span>
                           {request.disputeDetails.resolution && (
                             <div className="mt-2 pt-2 border-t border-red-200">
                               <span className="font-bold text-green-800 block">RESOLUTION DECISION:</span>
@@ -256,13 +260,24 @@ export const MyRequests: React.FC = () => {
                         )}
 
                         {request.status === "Completed" && (
-                          <Button
-                            variant="contained"
-                            className="bg-indigo-600 hover:bg-indigo-700"
-                            onClick={() => handleOpenReview(request.id)}
-                          >
-                            Leave Feedback Review
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="contained"
+                              className="bg-indigo-600 hover:bg-indigo-700"
+                              onClick={() => handleOpenReview(request.id)}
+                            >
+                              Leave Feedback Review
+                            </Button>
+                            {currentUser?.role === "Resident" && (
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={() => handleOpenDispute(request.id)}
+                              >
+                                Dispute Job
+                              </Button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </CardContent>
